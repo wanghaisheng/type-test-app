@@ -6,7 +6,6 @@ import Config from "../../config";
 import * as Notifications from "../notifications";
 import Ape from "../../ape/index";
 import * as Loader from "../loader";
-// @ts-expect-error TODO: update slim-select
 import SlimSelect from "slim-select";
 import { QuoteLength } from "@monkeytype/contracts/schemas/configs";
 import {
@@ -166,16 +165,12 @@ export async function setFilterPreset(id: string): Promise<void> {
   ).addClass("active");
 }
 
-function deepCopyFilter(filter: ResultFilters): ResultFilters {
-  return JSON.parse(JSON.stringify(filter)) as ResultFilters;
-}
-
 function addFilterPresetToSnapshot(filter: ResultFilters): void {
   const snapshot = DB.getSnapshot();
   if (!snapshot) return;
   DB.setSnapshot({
     ...snapshot,
-    filterPresets: [...snapshot.filterPresets, deepCopyFilter(filter)],
+    filterPresets: [...snapshot.filterPresets, Misc.deepClone(filter)],
   });
 }
 
@@ -183,15 +178,20 @@ function addFilterPresetToSnapshot(filter: ResultFilters): void {
 export async function createFilterPreset(name: string): Promise<void> {
   name = name.replace(/ /g, "_");
   Loader.show();
-  const result = await Ape.users.addResultFilterPreset({ ...filters, name });
+  const result = await Ape.users.addResultFilterPreset({
+    body: { ...filters, name },
+  });
   Loader.hide();
   if (result.status === 200) {
-    addFilterPresetToSnapshot({ ...filters, name, _id: result.data as string });
+    addFilterPresetToSnapshot({ ...filters, name, _id: result.body.data });
     void updateFilterPresets();
     Notifications.add("Filter preset created", 1);
   } else {
-    Notifications.add("Error creating filter preset: " + result.message, -1);
-    console.log("error creating filter preset: " + result.message);
+    Notifications.add(
+      "Error creating filter preset: " + result.body.message,
+      -1
+    );
+    console.log("error creating filter preset: " + result.body.message);
   }
 }
 
@@ -210,7 +210,9 @@ function removeFilterPresetFromSnapshot(id: string): void {
 // deletes the currently selected filter preset
 async function deleteFilterPreset(id: string): Promise<void> {
   Loader.show();
-  const result = await Ape.users.removeResultFilterPreset(id);
+  const result = await Ape.users.removeResultFilterPreset({
+    params: { presetId: id },
+  });
   Loader.hide();
   if (result.status === 200) {
     removeFilterPresetFromSnapshot(id);
@@ -218,8 +220,11 @@ async function deleteFilterPreset(id: string): Promise<void> {
     reset();
     Notifications.add("Filter preset deleted", 1);
   } else {
-    Notifications.add("Error deleting filter preset: " + result.message, -1);
-    console.log("error deleting filter preset", result.message);
+    Notifications.add(
+      "Error deleting filter preset: " + result.body.message,
+      -1
+    );
+    console.log("error deleting filter preset", result.body.message);
   }
 }
 
@@ -254,17 +259,17 @@ function setFilter<G extends ResultFiltersGroup>(
   filter: ResultFiltersGroupItem<G>,
   value: boolean
 ): void {
-  filters[group][filter] = value as typeof filters[G][typeof filter];
+  filters[group][filter] = value as (typeof filters)[G][typeof filter];
 }
 
 function setAllFilters(group: ResultFiltersGroup, value: boolean): void {
   Object.keys(getGroup(group)).forEach((filter) => {
-    filters[group][filter as keyof typeof filters[typeof group]] =
+    filters[group][filter as keyof (typeof filters)[typeof group]] =
       value as never;
   });
 }
 
-export function loadTags(tags: MonkeyTypes.UserTag[]): void {
+export function loadTags(tags: DB.SnapshotUserTag[]): void {
   tags.forEach((tag) => {
     defaultResultFilters.tags[tag._id] = true;
   });
@@ -596,14 +601,14 @@ $(".pageAccount .topFilters button.currentConfigFilter").on("click", () => {
   filters.mode[Config.mode] = true;
   if (Config.mode === "time") {
     if ([15, 30, 60, 120].includes(Config.time)) {
-      const configTime = Config.time as MonkeyTypes.DefaultTimeModes;
+      const configTime = `${Config.time}` as keyof typeof filters.time;
       filters.time[configTime] = true;
     } else {
       filters.time.custom = true;
     }
   } else if (Config.mode === "words") {
     if ([10, 25, 50, 100, 200].includes(Config.words)) {
-      const configWords = Config.words as MonkeyTypes.DefaultWordsModes;
+      const configWords = `${Config.words}` as keyof typeof filters.words;
       filters.words[configWords] = true;
     } else {
       filters.words.custom = true;
@@ -779,9 +784,7 @@ export async function appendButtons(
         },
         events: {
           beforeChange: (
-            // @ts-expect-error TODO: update slim-select
             selectedOptions,
-            // @ts-expect-error TODO: update slim-select
             oldSelectedOptions
           ): void | boolean => {
             return selectBeforeChangeFn(
@@ -838,9 +841,7 @@ export async function appendButtons(
         },
         events: {
           beforeChange: (
-            // @ts-expect-error TODO: update slim-select
             selectedOptions,
-            // @ts-expect-error TODO: update slim-select
             oldSelectedOptions
           ): void | boolean => {
             return selectBeforeChangeFn(
@@ -893,9 +894,7 @@ export async function appendButtons(
         },
         events: {
           beforeChange: (
-            // @ts-expect-error TODO: update slim-select
             selectedOptions,
-            // @ts-expect-error TODO: update slim-select
             oldSelectedOptions
           ): void | boolean => {
             return selectBeforeChangeFn(
@@ -935,12 +934,12 @@ $(".group.presetFilterButtons .filterBtns").on(
   "click",
   ".filterPresets .delete-filter-preset",
   (e) => {
-    void deleteFilterPreset($(e.currentTarget).data("id"));
+    void deleteFilterPreset($(e.currentTarget).data("id") as string);
   }
 );
 
 function verifyResultFiltersStructure(filterIn: ResultFilters): ResultFilters {
-  const filter = deepCopyFilter(filterIn);
+  const filter = Misc.deepClone(filterIn);
   Object.entries(defaultResultFilters).forEach((entry) => {
     const key = entry[0] as ResultFiltersGroup;
     const value = entry[1];

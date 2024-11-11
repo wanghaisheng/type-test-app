@@ -1,4 +1,13 @@
-const FunboxList: MonkeyTypes.FunboxMetadata[] = [
+export type FunboxMetadata = {
+  name: string;
+  canGetPb: boolean;
+  difficultyLevel: number;
+  properties?: string[];
+  frontendForcedConfig?: Record<string, string[] | boolean[]>;
+  frontendFunctions?: string[];
+};
+
+const FunboxList: FunboxMetadata[] = [
   {
     canGetPb: false,
     difficultyLevel: 1,
@@ -353,6 +362,13 @@ const FunboxList: MonkeyTypes.FunboxMetadata[] = [
     properties: ["noLigatures"],
     frontendFunctions: ["alterText"],
     name: "ddoouubblleedd",
+  },
+  {
+    canGetPb: false,
+    difficultyLevel: 1,
+    properties: ["changesCapitalisation"],
+    frontendFunctions: ["alterText"],
+    name: "instant_messaging",
   },
 ];
 

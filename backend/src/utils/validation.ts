@@ -1,53 +1,7 @@
 import _ from "lodash";
-import { replaceHomoglyphs } from "../constants/homoglyphs";
-import { profanities } from "../constants/profanities";
-import { intersect, sanitizeString } from "./misc";
 import { default as FunboxList } from "../constants/funbox-list";
-import { CompletedEvent } from "@monkeytype/shared-types";
-
-export function inRange(value: number, min: number, max: number): boolean {
-  return value >= min && value <= max;
-}
-
-const VALID_NAME_PATTERN = /^[\da-zA-Z_-]+$/;
-
-export function isUsernameValid(name: string): boolean {
-  if (_.isNil(name) || !inRange(name.length, 1, 16)) {
-    return false;
-  }
-
-  return VALID_NAME_PATTERN.test(name);
-}
-
-export function containsProfanity(
-  text: string,
-  mode: "word" | "substring"
-): boolean {
-  const normalizedText = text
-    .toLowerCase()
-    .split(/[.,"/#!?$%^&*;:{}=\-_`~()\s\n]+/g)
-    .map((str) => {
-      return replaceHomoglyphs(sanitizeString(str) ?? "");
-    });
-
-  const hasProfanity = profanities.some((profanity) => {
-    return normalizedText.some((word) => {
-      return mode === "word"
-        ? word.startsWith(profanity)
-        : word.includes(profanity);
-    });
-  });
-
-  return hasProfanity;
-}
-
-export function isTagPresetNameValid(name: string): boolean {
-  if (_.isNil(name) || !inRange(name.length, 1, 16)) {
-    return false;
-  }
-
-  return VALID_NAME_PATTERN.test(name);
-}
+import { CompletedEvent } from "@monkeytype/contracts/schemas/results";
+import { intersect } from "@monkeytype/util/arrays";
 
 export function isTestTooShort(result: CompletedEvent): boolean {
   const { mode, mode2, customText, testDuration, bailedOut } = result;
@@ -168,9 +122,9 @@ export function areFunboxesCompatible(funboxesString: string): boolean {
         f.properties?.some((fp) => fp.startsWith("toPush:")) ??
         f.frontendFunctions?.includes("pullSection")
     ).length <= 1;
-  const oneApplyCSSMax =
-    funboxesToCheck.filter((f) => f.frontendFunctions?.includes("applyCSS"))
-      .length <= 1;
+  // const oneApplyCSSMax =
+  //   funboxesToCheck.filter((f) => f.frontendFunctions?.includes("applyCSS"))
+  //     .length <= 1; //todo: move all funbox stuff to the shared package, this is ok to remove for now
   const onePunctuateWordMax =
     funboxesToCheck.filter((f) =>
       f.frontendFunctions?.includes("punctuateWord")
@@ -182,6 +136,10 @@ export function areFunboxesCompatible(funboxesString: string): boolean {
   const oneCharReplacerMax =
     funboxesToCheck.filter((f) => f.frontendFunctions?.includes("getWordHtml"))
       .length <= 1;
+  const oneChangesCapitalisationMax =
+    funboxesToCheck.filter((f) =>
+      f.properties?.find((fp) => fp === "changesCapitalisation")
+    ).length <= 1;
   const allowedConfig = {} as Record<string, string[] | boolean[]>;
   let noConfigConflicts = true;
   for (const f of funboxesToCheck) {
@@ -216,10 +174,11 @@ export function areFunboxesCompatible(funboxesString: string): boolean {
     canSpeak &&
     hasLanguageToSpeak &&
     oneToPushOrPullSectionMax &&
-    oneApplyCSSMax &&
+    // oneApplyCSSMax &&
     onePunctuateWordMax &&
     oneCharCheckerMax &&
     oneCharReplacerMax &&
+    oneChangesCapitalisationMax &&
     noConfigConflicts &&
     oneWordOrderMax
   );

@@ -198,7 +198,7 @@
   },
   {
     "name": "slovenian",
-    "languages": ["slovenian"]
+    "languages": ["slovenian", "slovenian_1k", "slovenian_5k"]
   },
   {
     "name": "croatian",
@@ -498,7 +498,8 @@
       "twitch_emotes",
       "git",
       "typing_of_the_dead",
-      "league_of_legends"
+      "league_of_legends",
+      "docker_file"
     ]
   },
   {
@@ -538,6 +539,10 @@
     "languages": ["klingon", "klingon_1k"]
   },
   {
+    "name": "quenya",
+    "languages": ["quenya"]
+  },
+  {
     "name": "lorem_ipsum",
     "languages": ["lorem_ipsum"]
   },
@@ -566,6 +571,7 @@
       "code_fsharp",
       "code_javascript",
       "code_javascript_1k",
+      "code_javascript_react",
       "code_julia",
       "code_haskell",
       "code_html",
@@ -606,7 +612,9 @@
       "code_ook",
       "code_typescript",
       "code_cobol",
-      "code_common_lisp"
+      "code_common_lisp",
+      "code_odin",
+      "code_fortran"
     ]
   }
 ]

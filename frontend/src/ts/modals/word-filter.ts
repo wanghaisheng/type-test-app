@@ -2,7 +2,6 @@ import * as Misc from "../utils/misc";
 import * as JSONData from "../utils/json-data";
 import * as CustomText from "../test/custom-text";
 import * as Notifications from "../elements/notifications";
-// @ts-expect-error TODO: update slim-select
 import SlimSelect from "slim-select";
 import AnimatedModal, {
   HideOptions,
@@ -11,8 +10,8 @@ import AnimatedModal, {
 
 type FilterPreset = {
   display: string;
-  getIncludeString: (layout: MonkeyTypes.Layout) => string[];
-  getExcludeString: (layout: MonkeyTypes.Layout) => string[];
+  getIncludeString: (layout: JSONData.Layout) => string[];
+  getExcludeString: (layout: JSONData.Layout) => string[];
 };
 
 const presets: Record<string, FilterPreset> = {

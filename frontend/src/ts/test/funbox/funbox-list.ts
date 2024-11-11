@@ -1,4 +1,6 @@
-const list: MonkeyTypes.FunboxMetadata[] = [
+import { FunboxFunctions, FunboxMetadata } from "../../utils/json-data";
+
+const list: FunboxMetadata[] = [
   {
     name: "nausea",
     info: "I think I'm gonna be sick.",
@@ -273,14 +275,19 @@ const list: MonkeyTypes.FunboxMetadata[] = [
     info: "TTyyppee eevveerryytthhiinngg ttwwiiccee..",
     properties: ["noLigatures"],
   },
+  {
+    name: "instant_messaging",
+    info: "Who needs shift anyway?",
+    properties: ["changesCapitalisation"],
+  },
 ];
 
-export function getAll(): MonkeyTypes.FunboxMetadata[] {
+export function getAll(): FunboxMetadata[] {
   return list;
 }
 
-export function get(config: string): MonkeyTypes.FunboxMetadata[] {
-  const funboxes: MonkeyTypes.FunboxMetadata[] = [];
+export function get(config: string): FunboxMetadata[] {
+  const funboxes: FunboxMetadata[] = [];
   for (const i of config.split("#")) {
     const f = list.find((f) => f.name === i);
     if (f) funboxes.push(f);
@@ -288,10 +295,7 @@ export function get(config: string): MonkeyTypes.FunboxMetadata[] {
   return funboxes;
 }
 
-export function setFunboxFunctions(
-  name: string,
-  obj: MonkeyTypes.FunboxFunctions
-): void {
+export function setFunboxFunctions(name: string, obj: FunboxFunctions): void {
   const fb = list.find((f) => f.name === name);
   if (!fb) throw new Error(`Funbox ${name} not found.`);
   fb.functions = obj;

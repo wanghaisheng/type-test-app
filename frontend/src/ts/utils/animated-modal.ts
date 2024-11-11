@@ -1,4 +1,4 @@
-import { isPopupVisible } from "./misc";
+import { applyReducedMotion, isPopupVisible } from "./misc";
 import * as Skeleton from "./skeleton";
 
 type CustomAnimation = {
@@ -134,6 +134,8 @@ export default class AnimatedModal<
   async runSetup(): Promise<void> {
     this.wrapperEl.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && isPopupVisible(this.dialogId)) {
+        e.preventDefault();
+        e.stopPropagation();
         if (this.customEscapeHandler !== undefined) {
           this.customEscapeHandler(e);
         } else {
@@ -211,14 +213,15 @@ export default class AnimatedModal<
         return;
       }
 
-      const modalAnimationDuration =
+      const modalAnimationDuration = applyReducedMotion(
         (options?.customAnimation?.modal?.durationMs ??
           options?.animationDurationMs ??
           this.customShowAnimations?.modal?.durationMs ??
           DEFAULT_ANIMATION_DURATION) *
-        (options?.modalChain !== undefined
-          ? MODAL_ONLY_ANIMATION_MULTIPLIER
-          : 1);
+          (options?.modalChain !== undefined
+            ? MODAL_ONLY_ANIMATION_MULTIPLIER
+            : 1)
+      );
 
       if (options?.modalChain !== undefined) {
         this.previousModalInChain = options.modalChain;
@@ -252,10 +255,11 @@ export default class AnimatedModal<
           to: { opacity: "1" },
           easing: "swing",
         };
-      const wrapperAnimationDuration =
+      const wrapperAnimationDuration = applyReducedMotion(
         options?.customAnimation?.wrapper?.durationMs ??
-        this.customShowAnimations?.wrapper?.durationMs ??
-        DEFAULT_ANIMATION_DURATION;
+          this.customShowAnimations?.wrapper?.durationMs ??
+          DEFAULT_ANIMATION_DURATION
+      );
 
       const animationMode =
         this.previousModalInChain !== undefined
@@ -335,24 +339,26 @@ export default class AnimatedModal<
 
       const modalAnimation =
         options?.customAnimation?.modal ?? this.customHideAnimations?.modal;
-      const modalAnimationDuration =
+      const modalAnimationDuration = applyReducedMotion(
         (options?.customAnimation?.modal?.durationMs ??
           options?.animationDurationMs ??
           this.customHideAnimations?.modal?.durationMs ??
           DEFAULT_ANIMATION_DURATION) *
-        (this.previousModalInChain !== undefined
-          ? MODAL_ONLY_ANIMATION_MULTIPLIER
-          : 1);
+          (this.previousModalInChain !== undefined
+            ? MODAL_ONLY_ANIMATION_MULTIPLIER
+            : 1)
+      );
       const wrapperAnimation = options?.customAnimation?.wrapper ??
         this.customHideAnimations?.wrapper ?? {
           from: { opacity: "1" },
           to: { opacity: "0" },
           easing: "swing",
         };
-      const wrapperAnimationDuration =
+      const wrapperAnimationDuration = applyReducedMotion(
         options?.customAnimation?.wrapper?.durationMs ??
-        this.customHideAnimations?.wrapper?.durationMs ??
-        DEFAULT_ANIMATION_DURATION;
+          this.customHideAnimations?.wrapper?.durationMs ??
+          DEFAULT_ANIMATION_DURATION
+      );
       const animationMode =
         this.previousModalInChain !== undefined
           ? "modalOnly"
